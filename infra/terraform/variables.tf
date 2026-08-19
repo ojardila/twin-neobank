@@ -46,6 +46,12 @@ variable "registry_tier" {
   default     = "basic"
 }
 
+variable "registry_region" {
+  description = "DOCR region. DOCR is not available in every region (e.g. NOT nyc1); use nyc3/sfo3/ams3/fra1/sgp1/blr1/syd1."
+  type        = string
+  default     = "nyc3"
+}
+
 variable "domain" {
   description = "Domain to host DNS for in DigitalOcean (e.g. argt.space). Empty = skip DNS. DO manages DNS only; register the domain at a registrar and point its nameservers to DO."
   type        = string

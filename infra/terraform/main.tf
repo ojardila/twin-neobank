@@ -32,7 +32,7 @@ resource "digitalocean_kubernetes_cluster" "twin" {
 resource "digitalocean_container_registry" "twin" {
   name                   = var.registry_name
   subscription_tier_slug = var.registry_tier
-  region                 = var.region
+  region                 = var.registry_region
 }
 
 # Wire the registry into the cluster so pods can pull without a manual secret.
