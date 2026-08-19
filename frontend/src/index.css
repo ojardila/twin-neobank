@@ -426,6 +426,26 @@ a {
 .toast-error { border-left: 3px solid var(--bad); }
 .toast-info { border-left: 3px solid var(--brand-1); }
 
+/* Transfer confirmation */
+.confirm-box {
+  background: rgba(6, 9, 17, 0.5);
+  border: 1px solid var(--border, var(--glass-brd));
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.confirm-amount {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin-bottom: 10px;
+  background: linear-gradient(90deg, #fff, #cdd8ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 .qr {
   display: grid;
   place-items: center;

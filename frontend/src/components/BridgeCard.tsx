@@ -12,6 +12,7 @@ import { formatEther, maxUint256, pad, parseUnits, type Address } from "viem";
 import { ARGT, BRIDGE_CHAINS, bridgeChainById } from "../lib/contracts";
 import { BRIDGE_ADAPTER_ABI } from "../lib/abis/bridgeAdapter";
 import { ERC20_ABI } from "../lib/abis/erc20";
+import { friendlyError } from "../lib/errors";
 import { useToast } from "./Toast";
 
 export function BridgeCard() {
@@ -34,7 +35,7 @@ export function BridgeCard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccess]);
   useEffect(() => {
-    if (error) toast.push("error", "Bridge failed", error.message.slice(0, 90));
+    if (error) toast.push("error", "Bridge failed", friendlyError(error));
   }, [error, toast]);
 
   const amountLD =
