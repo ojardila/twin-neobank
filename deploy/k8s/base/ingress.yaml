@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: twin-neobank.example.com
+    - host: argt.space
       http:
         paths:
           # API to the Go backend.

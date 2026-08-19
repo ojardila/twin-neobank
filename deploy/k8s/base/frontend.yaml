@@ -5,7 +5,7 @@ metadata:
   labels:
     app: twin-neobank-frontend
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: twin-neobank-frontend

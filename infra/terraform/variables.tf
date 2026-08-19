@@ -17,21 +17,21 @@ variable "cluster_name" {
 }
 
 variable "k8s_version_prefix" {
-  description = "Kubernetes version prefix to select the latest matching patch (e.g. 1.31.)."
+  description = "Kubernetes version prefix to select the latest matching patch (e.g. 1.34.)."
   type        = string
-  default     = "1.31."
+  default     = "1.34."
 }
 
 variable "node_size" {
   description = "Droplet size slug for worker nodes."
   type        = string
-  default     = "s-2vcpu-2gb"
+  default     = "s-1vcpu-2gb"
 }
 
 variable "node_count" {
   description = "Number of worker nodes."
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "registry_name" {
@@ -44,4 +44,16 @@ variable "registry_tier" {
   description = "DOCR subscription tier (starter=1 repo/free, basic=$5/mo, professional)."
   type        = string
   default     = "basic"
+}
+
+variable "domain" {
+  description = "Domain to host DNS for in DigitalOcean (e.g. argt.space). Empty = skip DNS. DO manages DNS only; register the domain at a registrar and point its nameservers to DO."
+  type        = string
+  default     = "argt.space"
+}
+
+variable "lb_ip" {
+  description = "Public IP of the ingress Load Balancer (from: kubectl -n ingress-nginx get svc ingress-nginx-controller). Fill after the ingress is up, then re-apply."
+  type        = string
+  default     = ""
 }
