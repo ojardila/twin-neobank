@@ -426,6 +426,34 @@ a {
 .toast-error { border-left: 3px solid var(--bad); }
 .toast-info { border-left: 3px solid var(--brand-1); }
 
+/* Percentage quick-pick */
+.pct-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.pct-btn {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-brd);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pct-btn:hover:not(:disabled) {
+  color: #fff;
+  background: rgba(91, 140, 255, 0.16);
+  border-color: rgba(91, 140, 255, 0.4);
+}
+.pct-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* Transfer confirmation */
 .confirm-box {
   background: rgba(6, 9, 17, 0.5);

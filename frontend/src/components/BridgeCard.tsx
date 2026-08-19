@@ -8,11 +8,13 @@ import {
   useWriteContract,
   useWaitForTransactionReceipt,
 } from "wagmi";
-import { formatEther, maxUint256, pad, parseUnits, type Address } from "viem";
+import { formatEther, pad, parseUnits, type Address } from "viem";
 import { ARGT, BRIDGE_CHAINS, bridgeChainById } from "../lib/contracts";
 import { BRIDGE_ADAPTER_ABI } from "../lib/abis/bridgeAdapter";
 import { ERC20_ABI } from "../lib/abis/erc20";
 import { friendlyError } from "../lib/errors";
+import { useArgtRaw } from "../lib/useArgtRaw";
+import { PercentButtons } from "./PercentButtons";
 import { useToast } from "./Toast";
 
 export function BridgeCard() {
@@ -25,6 +27,7 @@ export function BridgeCard() {
   const [destKey, setDestKey] = useState(dests[0]?.key ?? "");
   const [amount, setAmount] = useState("");
   const dest = BRIDGE_CHAINS.find((c) => c.key === destKey) ?? dests[0];
+  const balance = useArgtRaw(chainId);
 
   const { writeContract, data: hash, isPending, error } = useWriteContract();
   const { isLoading: confirming, isSuccess } = useWaitForTransactionReceipt({ hash });
@@ -81,7 +84,7 @@ export function BridgeCard() {
       address: ARGT.address,
       abi: ERC20_ABI,
       functionName: "approve",
-      args: [source.adapter, maxUint256],
+      args: [source.adapter, amountLD],
       chainId,
     });
   }
@@ -128,6 +131,7 @@ export function BridgeCard() {
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
       />
+      <PercentButtons balance={balance} onPick={setAmount} />
       {nativeFee !== undefined && (
         <div className="stat" style={{ marginTop: 10 }}>
           <span className="muted">Messaging fee</span>

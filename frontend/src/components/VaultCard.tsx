@@ -6,16 +6,19 @@ import {
   useWriteContract,
   useWaitForTransactionReceipt,
 } from "wagmi";
-import { formatUnits, parseUnits, maxUint256, type Address } from "viem";
+import { formatUnits, parseUnits, type Address } from "viem";
 import { ARGT, VAULT } from "../lib/contracts";
 import { ERC20_ABI } from "../lib/abis/erc20";
 import { ERC4626_ABI } from "../lib/abis/erc4626";
 import { friendlyError } from "../lib/errors";
+import { useArgtRaw } from "../lib/useArgtRaw";
+import { PercentButtons } from "./PercentButtons";
 import { useToast } from "./Toast";
 
 export function VaultCard() {
   const { address } = useAccount();
   const [amount, setAmount] = useState("");
+  const balance = useArgtRaw();
   const toast = useToast();
   const { writeContract, data: hash, isPending, error } = useWriteContract();
   const { isLoading: confirming, isSuccess } = useWaitForTransactionReceipt({ hash });
@@ -63,7 +66,9 @@ export function VaultCard() {
       address: ARGT.address,
       abi: ERC20_ABI,
       functionName: "approve",
-      args: [VAULT.address, maxUint256],
+      // Approve only the exact deposit amount (not unlimited) — safer and avoids
+      // wallet "unlimited spending cap" scam warnings.
+      args: [VAULT.address, amountWei],
       chainId: ARGT.chainId,
     });
   }
@@ -111,6 +116,7 @@ export function VaultCard() {
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
       />
+      <PercentButtons balance={balance} onPick={setAmount} />
       {needsApprove ? (
         <button className="btn wide" disabled={busy} onClick={approve}>
           {busy ? "…" : "Approve ARGt"}

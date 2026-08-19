@@ -6,6 +6,8 @@ import { isAddress, parseUnits, type Address } from "viem";
 import { ARGT } from "../lib/contracts";
 import { ERC20_ABI } from "../lib/abis/erc20";
 import { friendlyError } from "../lib/errors";
+import { useArgtRaw } from "../lib/useArgtRaw";
+import { PercentButtons } from "./PercentButtons";
 import { useToast } from "./Toast";
 
 interface Props {
@@ -22,6 +24,7 @@ export function TransferCard({ initialTo, initialAmount, initialNote }: Props) {
   const [to, setTo] = useState(initialTo ?? "");
   const [amount, setAmount] = useState(initialAmount ?? "");
   const [confirming, setConfirming] = useState(false);
+  const balance = useArgtRaw();
   const toast = useToast();
   const { writeContract, data: hash, isPending, error, reset } = useWriteContract();
   const { isLoading: mining, isSuccess } = useWaitForTransactionReceipt({ hash });
@@ -104,6 +107,7 @@ export function TransferCard({ initialTo, initialAmount, initialNote }: Props) {
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
       />
+      <PercentButtons balance={balance} onPick={setAmount} />
       <button className="btn wide" disabled={!valid} onClick={() => setConfirming(true)}>
         Review transfer
       </button>
