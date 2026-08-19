@@ -55,4 +55,4 @@ jobs:
         run: |
           kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.16.2/cert-manager.yaml
           kubectl -n cert-manager rollout status deployment/cert-manager-webhook --timeout=180s || true
-          kubectl apply -f deploy/cert-manager/cluster-issuer.yaml
+          kubectl apply -f ../../deploy/cert-manager/cluster-issuer.yaml
