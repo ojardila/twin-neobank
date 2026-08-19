@@ -61,5 +61,5 @@ variable "domain" {
 variable "lb_ip" {
   description = "Public IP of the ingress Load Balancer (from: kubectl -n ingress-nginx get svc ingress-nginx-controller). Fill after the ingress is up, then re-apply."
   type        = string
-  default     = ""
+  default     = "45.55.106.184"
 }

@@ -73,8 +73,13 @@ jobs:
         run: |
           kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/do/deploy.yaml
           kubectl -n ingress-nginx rollout status deployment/ingress-nginx-controller --timeout=200s || true
+      - name: Ensure cert-manager + Let's Encrypt issuer
+        run: |
+          kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.16.2/cert-manager.yaml
+          kubectl -n cert-manager rollout status deployment/cert-manager-webhook --timeout=180s || true
+          kubectl apply -f deploy/cert-manager/cluster-issuer.yaml
       - name: Summary
-        run: echo "✅ Infrastructure converged" >> "$GITHUB_STEP_SUMMARY"
+        run: echo "✅ Infrastructure converged (ingress + cert-manager)" >> "$GITHUB_STEP_SUMMARY"
 
   # ---------------------------------------------------------------------------
   deploy:

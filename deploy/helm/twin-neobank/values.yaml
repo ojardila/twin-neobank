@@ -43,5 +43,9 @@ ingress:
   enabled: true
   className: nginx
   host: argt.space
+  tls:
+    enabled: true
+    issuer: letsencrypt-prod # cert-manager ClusterIssuer
+    secretName: argt-space-tls
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
