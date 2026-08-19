@@ -1,29 +1,32 @@
+{{- if .Values.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: twin-neobank
+  labels:
+    {{- include "twin-neobank.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
   annotations:
-    # Adjust to your ingress controller / cert-manager setup.
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
-  ingressClassName: nginx
+  ingressClassName: {{ .Values.ingress.className }}
   rules:
-    - host: argt.space
+    - host: {{ .Values.ingress.host | quote }}
       http:
         paths:
-          # API to the Go backend.
           - path: /api
             pathType: Prefix
             backend:
               service:
                 name: twin-neobank-backend
                 port:
-                  number: 8080
-          # Everything else to the SPA.
+                  number: {{ .Values.backend.port }}
           - path: /
             pathType: Prefix
             backend:
               service:
                 name: twin-neobank-frontend
                 port:
-                  number: 80
+                  number: {{ .Values.frontend.service.port }}
+{{- end }}

@@ -1,0 +1,47 @@
+# Default values for the twin-neobank chart.
+
+# Pull secret for the private DigitalOcean Container Registry.
+# Created by Terraform in the target namespace (see infra/terraform).
+imagePullSecrets:
+  - name: docr-pull
+
+backend:
+  image:
+    repository: registry.digitalocean.com/twin-neobank-ojardila/twin-neobank-backend
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicas: 1
+  port: 8080
+  # Optional: pull per-chain RPC URLs from a Secret named twin-neobank-rpc.
+  envFrom: []
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
+
+frontend:
+  image:
+    repository: registry.digitalocean.com/twin-neobank-ojardila/twin-neobank-frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicas: 1
+  port: 8080 # nginx listens on 8080 inside the container
+  service:
+    port: 80 # cluster Service port the ingress targets
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+
+ingress:
+  enabled: true
+  className: nginx
+  host: argt.space
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"

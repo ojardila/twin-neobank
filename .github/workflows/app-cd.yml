@@ -57,12 +57,14 @@ jobs:
       - name: Save kubeconfig
         run: doctl kubernetes cluster kubeconfig save "${{ env.CLUSTER_NAME }}"
 
-      - name: Deploy (kustomize + pin SHA)
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.16.1
+
+      - name: Deploy with Helm (pin SHA)
         run: |
-          kubectl apply -k deploy/k8s/overlays/prod
-          kubectl -n "${{ env.NAMESPACE }}" set image deployment/twin-neobank-backend \
-            backend=${{ env.REGISTRY }}/${{ env.REGISTRY_NAME }}/twin-neobank-backend:${{ github.sha }}
-          kubectl -n "${{ env.NAMESPACE }}" set image deployment/twin-neobank-frontend \
-            frontend=${{ env.REGISTRY }}/${{ env.REGISTRY_NAME }}/twin-neobank-frontend:${{ github.sha }}
-          kubectl -n "${{ env.NAMESPACE }}" rollout status deployment/twin-neobank-backend --timeout=180s
-          kubectl -n "${{ env.NAMESPACE }}" rollout status deployment/twin-neobank-frontend --timeout=180s
+          helm upgrade --install twin-neobank deploy/helm/twin-neobank \
+            --namespace "${{ env.NAMESPACE }}" --create-namespace \
+            --set backend.image.tag="${{ github.sha }}" \
+            --set frontend.image.tag="${{ github.sha }}" \
+            --wait --timeout 5m

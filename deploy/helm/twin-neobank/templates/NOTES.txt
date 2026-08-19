@@ -1,0 +1,16 @@
+✅ {{ .Chart.Name }} {{ .Chart.AppVersion }} deployed as release "{{ .Release.Name }}" in namespace "{{ .Release.Namespace }}".
+
+Images:
+  backend  = {{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}
+  frontend = {{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}
+
+{{- if .Values.ingress.enabled }}
+
+🌐 App URL: https://{{ .Values.ingress.host }}
+
+Point DNS for {{ .Values.ingress.host }} at the ingress Load Balancer:
+  kubectl -n ingress-nginx get svc ingress-nginx-controller -o wide
+{{- end }}
+
+Check the rollout:
+  kubectl -n {{ .Release.Namespace }} get pods

@@ -1,0 +1,13 @@
+apiVersion: v2
+name: twin-neobank
+description: Non-custodial ARGt wallet — Go read API + React SPA
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - stablecoin
+  - wallet
+  - argt
+  - web3
+maintainers:
+  - name: ojardila

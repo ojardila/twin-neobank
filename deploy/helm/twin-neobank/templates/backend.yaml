@@ -4,8 +4,9 @@ metadata:
   name: twin-neobank-backend
   labels:
     app: twin-neobank-backend
+    {{- include "twin-neobank.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.backend.replicas }}
   selector:
     matchLabels:
       app: twin-neobank-backend
@@ -14,35 +15,35 @@ spec:
       labels:
         app: twin-neobank-backend
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: backend
-          image: twin-neobank-backend:latest
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
           ports:
-            - containerPort: 8080
+            - containerPort: {{ .Values.backend.port }}
           env:
             - name: PORT
-              value: "8080"
+              value: {{ .Values.backend.port | quote }}
+          {{- with .Values.backend.envFrom }}
           envFrom:
-            - secretRef:
-                name: twin-neobank-rpc
-                optional: true
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           resources:
-            requests:
-              cpu: 50m
-              memory: 64Mi
-            limits:
-              cpu: 250m
-              memory: 128Mi
+            {{- toYaml .Values.backend.resources | nindent 12 }}
           readinessProbe:
             httpGet:
               path: /readyz
-              port: 8080
+              port: {{ .Values.backend.port }}
             initialDelaySeconds: 3
             periodSeconds: 10
           livenessProbe:
             httpGet:
               path: /healthz
-              port: 8080
+              port: {{ .Values.backend.port }}
             initialDelaySeconds: 5
             periodSeconds: 15
           securityContext:
@@ -54,9 +55,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: twin-neobank-backend
+  labels:
+    {{- include "twin-neobank.labels" . | nindent 4 }}
 spec:
   selector:
     app: twin-neobank-backend
   ports:
-    - port: 8080
-      targetPort: 8080
+    - port: {{ .Values.backend.port }}
+      targetPort: {{ .Values.backend.port }}
