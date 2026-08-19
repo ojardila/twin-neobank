@@ -1,0 +1,73 @@
+name: App · CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "deploy/**"
+      - ".github/workflows/app-cd.yml"
+  workflow_dispatch:
+
+env:
+  REGISTRY: registry.digitalocean.com
+  REGISTRY_NAME: twin-neobank-ojardila
+  CLUSTER_NAME: twin-neobank
+  NAMESPACE: twin-neobank
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Log in to DOCR
+        run: doctl registry login --expiry-seconds 1200
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build & push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/Dockerfile.backend
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_NAME }}/twin-neobank-backend:latest
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_NAME }}/twin-neobank-backend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build & push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/Dockerfile.frontend
+          push: true
+          build-args: |
+            VITE_API_BASE=
+            VITE_WC_PROJECT_ID=${{ vars.VITE_WC_PROJECT_ID }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_NAME }}/twin-neobank-frontend:latest
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_NAME }}/twin-neobank-frontend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Save kubeconfig
+        run: doctl kubernetes cluster kubeconfig save "${{ env.CLUSTER_NAME }}"
+
+      - name: Deploy (kustomize + pin SHA)
+        run: |
+          kubectl apply -k deploy/k8s/overlays/prod
+          kubectl -n "${{ env.NAMESPACE }}" set image deployment/twin-neobank-backend \
+            backend=${{ env.REGISTRY }}/${{ env.REGISTRY_NAME }}/twin-neobank-backend:${{ github.sha }}
+          kubectl -n "${{ env.NAMESPACE }}" set image deployment/twin-neobank-frontend \
+            frontend=${{ env.REGISTRY }}/${{ env.REGISTRY_NAME }}/twin-neobank-frontend:${{ github.sha }}
+          kubectl -n "${{ env.NAMESPACE }}" rollout status deployment/twin-neobank-backend --timeout=180s
+          kubectl -n "${{ env.NAMESPACE }}" rollout status deployment/twin-neobank-frontend --timeout=180s

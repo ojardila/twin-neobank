@@ -1,0 +1,30 @@
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.local
+
+# Go / backend
+backend/bin/
+backend/server
+*.test
+coverage.out
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+*.kubeconfig
+kubeconfig
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+crash.log

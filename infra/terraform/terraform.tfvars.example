@@ -1,0 +1,11 @@
+# Copy to terraform.tfvars and fill in, OR export TF_VAR_do_token instead.
+# do_token is best provided via env:  export TF_VAR_do_token="$(cat ~/.tokens/digitalocean)"
+
+region        = "nyc1"
+cluster_name  = "twin-neobank"
+node_size     = "s-2vcpu-2gb"
+node_count    = 2
+
+# Must be globally unique across ALL DigitalOcean accounts.
+registry_name = "twin-neobank-ojardila"
+registry_tier = "basic"
