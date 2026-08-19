@@ -1,13 +1,8 @@
 name: App · CD
 
+# Manual-only. The primary deploy path is the Release pipeline (release.yml),
+# which runs infra -> deploy in order. Use this for ad-hoc redeploys.
 on:
-  push:
-    branches: [main]
-    paths:
-      - "backend/**"
-      - "frontend/**"
-      - "deploy/**"
-      - ".github/workflows/app-cd.yml"
   workflow_dispatch:
 
 env:
