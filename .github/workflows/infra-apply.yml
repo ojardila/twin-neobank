@@ -34,6 +34,14 @@ jobs:
       - name: Init
         run: terraform init -input=false
 
+      # A records used to be Terraform-managed; they're now owned by sync-dns.sh.
+      # Forget them from state (without deleting the live records) so apply won't
+      # destroy them. No-op once already removed.
+      - name: Release legacy DNS records from state
+        run: |
+          terraform state rm 'digitalocean_record.root[0]' 2>/dev/null || true
+          terraform state rm 'digitalocean_record.wildcard[0]' 2>/dev/null || true
+
       - name: Apply
         run: terraform apply -input=false -auto-approve
 
@@ -46,13 +54,26 @@ jobs:
       - name: Save kubeconfig
         run: doctl kubernetes cluster kubeconfig save "$(terraform output -raw cluster_name)"
 
-      - name: Ensure ingress-nginx
+      - name: Ensure ingress-nginx (standard LB, no proxy protocol)
         run: |
-          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/do/deploy.yaml
-          kubectl -n ingress-nginx rollout status deployment/ingress-nginx-controller --timeout=180s || true
+          # Install the controller only if absent, so re-runs don't churn the LB.
+          if ! kubectl -n ingress-nginx get deploy ingress-nginx-controller >/dev/null 2>&1; then
+            kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/do/deploy.yaml
+          else
+            echo "ingress-nginx already installed — skipping upstream apply"
+          fi
+          # The upstream "do" manifest uses a REGIONAL_NETWORK LB + proxy protocol,
+          # which does not forward reliably. Force a standard LB with no proxy protocol.
+          kubectl -n ingress-nginx patch configmap ingress-nginx-controller \
+            --type merge -p '{"data":{"use-proxy-protocol":"false"}}' || true
+          kubectl apply -f ../../deploy/ingress-nginx/lb-service.yaml
+          kubectl -n ingress-nginx rollout status deployment/ingress-nginx-controller --timeout=200s || true
 
       - name: Ensure cert-manager + Let's Encrypt issuer
         run: |
           kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.16.2/cert-manager.yaml
           kubectl -n cert-manager rollout status deployment/cert-manager-webhook --timeout=180s || true
           kubectl apply -f ../../deploy/cert-manager/cluster-issuer.yaml
+
+      - name: Sync DNS to the live Load Balancer IP
+        run: ../../deploy/scripts/sync-dns.sh argt.space

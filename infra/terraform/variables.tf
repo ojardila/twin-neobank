@@ -58,8 +58,5 @@ variable "domain" {
   default     = "argt.space"
 }
 
-variable "lb_ip" {
-  description = "Public IP of the ingress Load Balancer (from: kubectl -n ingress-nginx get svc ingress-nginx-controller). Fill after the ingress is up, then re-apply."
-  type        = string
-  default     = "45.55.106.184"
-}
+# The ingress Load Balancer IP is managed dynamically by CI (deploy/scripts/sync-dns.sh),
+# not Terraform, because the LB is created by Kubernetes and its IP can change.

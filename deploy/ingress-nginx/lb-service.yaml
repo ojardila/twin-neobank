@@ -1,0 +1,33 @@
+# Standard DigitalOcean Load Balancer for ingress-nginx.
+#
+# The upstream ingress-nginx "do" manifest ships a Service that requests a
+# REGIONAL_NETWORK LB with proxy protocol, which does NOT forward traffic
+# reliably on DOKS. We override it with a plain standard LB (no proxy protocol),
+# per https://docs.digitalocean.com/products/kubernetes/how-to/add-load-balancers/.
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-nginx-controller
+  namespace: ingress-nginx
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/instance: ingress-nginx
+    app.kubernetes.io/component: controller
+  annotations:
+    service.beta.kubernetes.io/do-loadbalancer-name: "twin-neobank-ingress"
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Cluster
+  selector:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/instance: ingress-nginx
+    app.kubernetes.io/component: controller
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: https
+      protocol: TCP

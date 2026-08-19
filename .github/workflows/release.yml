@@ -61,6 +61,10 @@ jobs:
           terraform_version: "1.9.5"
       - name: Terraform init
         run: terraform init -input=false
+      - name: Release legacy DNS records from state
+        run: |
+          terraform state rm 'digitalocean_record.root[0]' 2>/dev/null || true
+          terraform state rm 'digitalocean_record.wildcard[0]' 2>/dev/null || true
       - name: Terraform apply
         run: terraform apply -input=false -auto-approve
       - name: Install doctl
@@ -69,17 +73,26 @@ jobs:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
       - name: Save kubeconfig
         run: doctl kubernetes cluster kubeconfig save "${{ env.CLUSTER_NAME }}"
-      - name: Ensure ingress-nginx
+      - name: Ensure ingress-nginx (standard LB, no proxy protocol)
         run: |
-          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/do/deploy.yaml
+          if ! kubectl -n ingress-nginx get deploy ingress-nginx-controller >/dev/null 2>&1; then
+            kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/do/deploy.yaml
+          else
+            echo "ingress-nginx already installed — skipping upstream apply"
+          fi
+          kubectl -n ingress-nginx patch configmap ingress-nginx-controller \
+            --type merge -p '{"data":{"use-proxy-protocol":"false"}}' || true
+          kubectl apply -f ../../deploy/ingress-nginx/lb-service.yaml
           kubectl -n ingress-nginx rollout status deployment/ingress-nginx-controller --timeout=200s || true
       - name: Ensure cert-manager + Let's Encrypt issuer
         run: |
           kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.16.2/cert-manager.yaml
           kubectl -n cert-manager rollout status deployment/cert-manager-webhook --timeout=180s || true
           kubectl apply -f ../../deploy/cert-manager/cluster-issuer.yaml
+      - name: Sync DNS to the live Load Balancer IP
+        run: ../../deploy/scripts/sync-dns.sh argt.space
       - name: Summary
-        run: echo "✅ Infrastructure converged (ingress + cert-manager)" >> "$GITHUB_STEP_SUMMARY"
+        run: echo "✅ Infrastructure converged (standard LB + cert-manager + DNS)" >> "$GITHUB_STEP_SUMMARY"
 
   # ---------------------------------------------------------------------------
   deploy:
