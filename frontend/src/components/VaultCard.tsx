@@ -10,6 +10,7 @@ import { formatUnits, parseUnits, maxUint256, type Address } from "viem";
 import { ARGT, VAULT } from "../lib/contracts";
 import { ERC20_ABI } from "../lib/abis/erc20";
 import { ERC4626_ABI } from "../lib/abis/erc4626";
+import { friendlyError } from "../lib/errors";
 import { useToast } from "./Toast";
 
 export function VaultCard() {
@@ -49,7 +50,7 @@ export function VaultCard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccess]);
   useEffect(() => {
-    if (error) toast.push("error", "Vault tx failed", error.message.slice(0, 90));
+    if (error) toast.push("error", "Vault tx failed", friendlyError(error));
   }, [error, toast]);
 
   const amountWei =
