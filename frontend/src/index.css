@@ -832,3 +832,15 @@ a {
   color: var(--muted);
   font-size: 11px;
 }
+
+/* Light-mode contrast fixes */
+[data-theme="light"] .hero .net {
+  color: #2b4a9e;
+  background: rgba(91, 140, 255, 0.16);
+  border-color: rgba(91, 140, 255, 0.35);
+}
+[data-theme="light"] .track-link,
+[data-theme="light"] .footer-links a,
+[data-theme="light"] .bridge-row-link {
+  color: #1d4ed8;
+}
