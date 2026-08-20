@@ -454,6 +454,50 @@ a {
 .toast-error { border-left: 3px solid var(--bad); }
 .toast-info { border-left: 3px solid var(--brand-1); }
 
+/* Tab panel transition */
+.panel {
+  animation: panelIn 0.32s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Copy-address chip */
+.addr-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 14px 0 4px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-brd);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s;
+}
+.addr-chip:hover {
+  background: rgba(91, 140, 255, 0.14);
+}
+.addr-chip .addr-value {
+  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.addr-chip .addr-copy {
+  margin-left: auto;
+  color: var(--brand-3);
+  font-weight: 600;
+}
+
 /* Bridge tracking link */
 .track-link {
   display: block;
