@@ -498,6 +498,14 @@ a {
   font-weight: 600;
 }
 
+/* Inline validation hint */
+.hint-bad {
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bad);
+}
+
 /* Bridge tracking link */
 .track-link {
   display: block;
