@@ -7,6 +7,7 @@ import "@rainbow-me/rainbowkit/styles.css";
 
 import { wagmiConfig } from "./lib/wagmi";
 import { ToastProvider } from "./components/Toast";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import App from "./App";
 import "./index.css";
 
@@ -19,14 +20,16 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <span />
       <span />
     </div>
-    <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider>
-          <ToastProvider>
-            <App />
-          </ToastProvider>
-        </RainbowKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <ErrorBoundary>
+      <WagmiProvider config={wagmiConfig}>
+        <QueryClientProvider client={queryClient}>
+          <RainbowKitProvider>
+            <ToastProvider>
+              <App />
+            </ToastProvider>
+          </RainbowKitProvider>
+        </QueryClientProvider>
+      </WagmiProvider>
+    </ErrorBoundary>
   </React.StrictMode>,
 );
