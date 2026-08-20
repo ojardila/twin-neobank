@@ -14,7 +14,9 @@ import { BRIDGE_ADAPTER_ABI } from "../lib/abis/bridgeAdapter";
 import { ERC20_ABI } from "../lib/abis/erc20";
 import { friendlyError } from "../lib/errors";
 import { useArgtRaw } from "../lib/useArgtRaw";
+import { layerZeroTx } from "../lib/links";
 import { PercentButtons } from "./PercentButtons";
+import { Spinner } from "./Spinner";
 import { useToast } from "./Toast";
 
 export function BridgeCard() {
@@ -148,13 +150,13 @@ export function BridgeCard() {
           disabled={amountLD === 0n || nativeFee === undefined || busy}
           onClick={send}
         >
-          {busy ? "Sending…" : `Bridge to ${dest?.name}`}
+          {busy ? <Spinner label="Sending…" /> : `Bridge to ${dest?.name}`}
         </button>
       )}
       {isSuccess && hash && (
         <a
           className="track-link"
-          href={`https://layerzeroscan.com/tx/${hash}`}
+          href={layerZeroTx(hash)}
           target="_blank"
           rel="noreferrer"
         >

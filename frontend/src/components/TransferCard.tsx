@@ -8,7 +8,9 @@ import { ERC20_ABI } from "../lib/abis/erc20";
 import { friendlyError } from "../lib/errors";
 import { useArgtRaw } from "../lib/useArgtRaw";
 import { exceedsBalance } from "../lib/validate";
+import { arbiscanTx } from "../lib/links";
 import { PercentButtons } from "./PercentButtons";
+import { Spinner } from "./Spinner";
 import { useToast } from "./Toast";
 
 interface Props {
@@ -83,7 +85,7 @@ export function TransferCard({ initialTo, initialAmount, initialNote }: Props) {
           )}
         </div>
         <button className="btn wide" disabled={busy} onClick={send}>
-          {busy ? "Confirming…" : "Confirm & send"}
+          {busy ? <Spinner label="Confirming…" /> : "Confirm & send"}
         </button>
         <button className="btn ghost wide" disabled={busy} onClick={() => setConfirming(false)}>
           Cancel
@@ -117,7 +119,7 @@ export function TransferCard({ initialTo, initialAmount, initialNote }: Props) {
       {isSuccess && hash && (
         <a
           className="track-link"
-          href={`https://arbiscan.io/tx/${hash}`}
+          href={arbiscanTx(hash)}
           target="_blank"
           rel="noreferrer"
         >

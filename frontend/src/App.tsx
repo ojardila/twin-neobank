@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount, useChainId } from "wagmi";
+import { useAccount, useChainId, useSwitchChain } from "wagmi";
 import { arbitrum, base, polygon } from "wagmi/chains";
 import { useArgtBalance } from "./lib/useArgtBalance";
 import { useTheme, ACCENTS } from "./lib/theme";
@@ -30,7 +30,11 @@ function prefillFromUrl() {
 export default function App() {
   const { isConnected } = useAccount();
   const chainId = useChainId();
+  const { switchChain } = useSwitchChain();
   const { theme, accent, setAccent, toggleTheme } = useTheme();
+  const supportedChain = ([arbitrum.id, base.id, polygon.id] as number[]).includes(
+    chainId,
+  );
   const prefill = useMemo(prefillFromUrl, []);
   const [tab, setTab] = useState<Tab>(prefill.hasRequest ? "send" : "home");
   const { formatted, isLoading, received } = useArgtBalance();
@@ -86,6 +90,14 @@ export default function App() {
         </div>
       ) : (
         <>
+          {!supportedChain && (
+            <div className="net-banner">
+              <span>⚠️ Unsupported network. Twin works on Arbitrum, Base and Polygon.</span>
+              <button className="btn" onClick={() => switchChain({ chainId: arbitrum.id })}>
+                Switch to Arbitrum
+              </button>
+            </div>
+          )}
           <div className={`card hero${received ? " received" : ""}`}>
             <div className="eyebrow">Total balance</div>
             <div className="amount">
