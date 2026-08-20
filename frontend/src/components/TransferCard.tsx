@@ -7,6 +7,7 @@ import { ARGT } from "../lib/contracts";
 import { ERC20_ABI } from "../lib/abis/erc20";
 import { friendlyError } from "../lib/errors";
 import { useArgtRaw } from "../lib/useArgtRaw";
+import { useEnsureChain } from "../lib/useEnsureChain";
 import { exceedsBalance } from "../lib/validate";
 import { arbiscanTx } from "../lib/links";
 import { PercentButtons } from "./PercentButtons";
@@ -28,6 +29,7 @@ export function TransferCard({ initialTo, initialAmount, initialNote }: Props) {
   const [amount, setAmount] = useState(initialAmount ?? "");
   const [confirming, setConfirming] = useState(false);
   const { balance, refetch: refetchBalance } = useArgtRaw();
+  const ensureChain = useEnsureChain();
   const toast = useToast();
   const { writeContract, data: hash, isPending, error, reset } = useWriteContract();
   const { isLoading: mining, isSuccess } = useWaitForTransactionReceipt({ hash });
@@ -52,8 +54,14 @@ export function TransferCard({ initialTo, initialAmount, initialNote }: Props) {
     }
   }, [error, toast]);
 
-  function send() {
+  async function send() {
     reset();
+    try {
+      await ensureChain(ARGT.chainId);
+    } catch {
+      toast.push("error", "Switch network", "Send on the Arbitrum network");
+      return;
+    }
     writeContract({
       address: ARGT.address,
       abi: ERC20_ABI,

@@ -19,8 +19,11 @@ export function friendlyError(err: unknown): string {
   if (msg.includes("transfer amount exceeds balance")) {
     return "You don't have enough ARGt for this transfer.";
   }
-  if (msg.includes("chain") && msg.includes("mismatch")) {
-    return "Wrong network — switch your wallet to Arbitrum.";
+  if (
+    msg.includes("does not match the target chain") ||
+    (msg.includes("chain") && msg.includes("mismatch"))
+  ) {
+    return "Wrong network — switch your wallet to Arbitrum and try again.";
   }
   if (msg.includes("nonce")) {
     return "Transaction sequencing issue — try again in a moment.";
