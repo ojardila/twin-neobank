@@ -14,6 +14,7 @@ import { friendlyError } from "../lib/errors";
 import { useArgtRaw } from "../lib/useArgtRaw";
 import { useEnsureChain } from "../lib/useEnsureChain";
 import { PercentButtons } from "./PercentButtons";
+import { Loader } from "./Loader";
 import { useToast } from "./Toast";
 
 export function VaultCard() {
@@ -145,7 +146,7 @@ export function VaultCard() {
         <div className="muted" style={{ fontSize: 12 }}>Your investment</div>
         <div className="position-value">
           {address && assets === undefined ? (
-            <span className="skeleton-bar" style={{ height: 30, width: 150 }} />
+            <Loader label="Loading position" />
           ) : (
             <span className="amount-value">
               {positionValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}

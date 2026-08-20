@@ -9,6 +9,7 @@ import { VaultCard } from "./components/VaultCard";
 import { BridgeCard } from "./components/BridgeCard";
 import { RequestCard } from "./components/RequestCard";
 import { Footer } from "./components/Footer";
+import { Loader } from "./components/Loader";
 import { useToast } from "./components/Toast";
 
 type Tab = "home" | "send" | "earn" | "bridge" | "request";
@@ -103,7 +104,7 @@ export default function App() {
             <div className="eyebrow">Total balance</div>
             <div className="amount">
               {formatted === undefined ? (
-                <span className="skeleton-bar" aria-label="Loading balance" />
+                <Loader label="Loading balance" />
               ) : (
                 <span className="amount-value">
                   {balanceText}

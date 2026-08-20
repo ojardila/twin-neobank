@@ -875,3 +875,38 @@ a {
     transform: translateY(0);
   }
 }
+
+/* Rocket loader (Argentine-flag colors) */
+.rocket-loader {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 42px;
+}
+.rocket-loader .rocket {
+  font-size: 30px;
+  display: inline-block;
+  animation: launch 1s ease-in-out infinite;
+  filter: drop-shadow(0 4px 10px rgba(116, 172, 223, 0.75));
+}
+@keyframes launch {
+  0%, 100% { transform: translateY(6px) rotate(-45deg) scale(0.95); }
+  50% { transform: translateY(-9px) rotate(-45deg) scale(1.06); }
+}
+.rocket-dots {
+  display: inline-flex;
+  gap: 5px;
+}
+.rocket-dots i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #74acdf; /* celeste */
+  animation: dotpulse 1s ease-in-out infinite;
+}
+.rocket-dots i:nth-child(2) { animation-delay: 0.15s; background: #fff; }
+.rocket-dots i:nth-child(3) { animation-delay: 0.3s; background: #f6b40e; } /* sol de mayo */
+@keyframes dotpulse {
+  0%, 100% { opacity: 0.3; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-4px); }
+}
