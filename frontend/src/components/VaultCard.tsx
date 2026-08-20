@@ -18,6 +18,9 @@ import { useToast } from "./Toast";
 export function VaultCard() {
   const { address } = useAccount();
   const [amount, setAmount] = useState("");
+  const [lastAction, setLastAction] = useState<
+    "approve" | "deposit" | "withdraw" | null
+  >(null);
   const balance = useArgtRaw();
   const toast = useToast();
   const { writeContract, data: hash, isPending, error } = useWriteContract();
@@ -49,7 +52,13 @@ export function VaultCard() {
   });
 
   useEffect(() => {
-    if (isSuccess) toast.push("success", "Vault updated", "Your position changed");
+    if (!isSuccess) return;
+    if (lastAction === "approve")
+      toast.push("success", "Approved", "Now confirm the deposit to invest");
+    else if (lastAction === "deposit")
+      toast.push("success", "Deposited", "Your ARGt is now earning in the vault");
+    else if (lastAction === "withdraw")
+      toast.push("success", "Withdrawn", "Funds returned to your wallet");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccess]);
   useEffect(() => {
@@ -62,6 +71,7 @@ export function VaultCard() {
     (allowance as bigint | undefined) !== undefined && (allowance as bigint) < amountWei;
 
   function approve() {
+    setLastAction("approve");
     writeContract({
       address: ARGT.address,
       abi: ERC20_ABI,
@@ -74,6 +84,7 @@ export function VaultCard() {
   }
   function deposit() {
     if (!address) return;
+    setLastAction("deposit");
     writeContract({
       address: VAULT.address,
       abi: ERC4626_ABI,
@@ -84,6 +95,7 @@ export function VaultCard() {
   }
   function withdrawAll() {
     if (!address || shares === undefined) return;
+    setLastAction("withdraw");
     writeContract({
       address: VAULT.address,
       abi: ERC4626_ABI,
@@ -93,20 +105,45 @@ export function VaultCard() {
     });
   }
 
-  const position =
-    assets !== undefined ? formatUnits(assets as bigint, ARGT.decimals) : "0";
+  const sharesBig = (shares as bigint | undefined) ?? 0n;
+  const positionValue =
+    assets !== undefined ? Number(formatUnits(assets as bigint, ARGT.decimals)) : 0;
+  const sharesNum = Number(formatUnits(sharesBig, ARGT.decimals));
+  const hasPosition = sharesBig > 0n;
   const busy = isPending || confirming;
 
   return (
     <div className="card">
       <h2>✦ Earn · ARGt Prime Vault</h2>
-      <div className="stat">
-        <span className="muted">Your position</span>
-        <span className="v">{Number(position).toLocaleString()} ARGt</span>
-      </div>
-      <div className="stat">
-        <span className="muted">Strategy</span>
-        <span className="v" style={{ fontSize: 13 }}>Morpho · ERC-4626</span>
+
+      <div className="position-box">
+        <div className="muted" style={{ fontSize: 12 }}>Your investment</div>
+        <div className="position-value">
+          {positionValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+          <span className="ticker"> ARGt</span>
+        </div>
+        {hasPosition ? (
+          <>
+            <div className="stat">
+              <span className="muted">Vault shares</span>
+              <span className="v" style={{ fontSize: 14 }}>
+                {sharesNum.toLocaleString(undefined, { maximumFractionDigits: 4 })} sARGt
+              </span>
+            </div>
+            <div className="stat">
+              <span className="muted">Strategy</span>
+              <span className="v" style={{ fontSize: 13 }}>Morpho · ERC-4626</span>
+            </div>
+            <p className="muted" style={{ fontSize: 12, margin: "8px 0 0" }}>
+              This value grows automatically as the vault earns yield. Withdraw anytime.
+            </p>
+          </>
+        ) : (
+          <p className="muted" style={{ fontSize: 13, margin: "6px 0 0" }}>
+            You haven't deposited yet. Deposit ARGt below to start earning yield
+            (Morpho · ERC-4626). Approving alone does not invest — you must also Deposit.
+          </p>
+        )}
       </div>
 
       <label className="field">Amount to deposit</label>
