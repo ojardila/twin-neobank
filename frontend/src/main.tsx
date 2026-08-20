@@ -6,6 +6,7 @@ import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
 
 import { wagmiConfig } from "./lib/wagmi";
+import { loadConfig } from "./lib/contracts";
 import { ToastProvider } from "./components/Toast";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import App from "./App";
@@ -13,7 +14,12 @@ import "./index.css";
 
 const queryClient = new QueryClient();
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
+// Hydrate contract config from the backend before rendering (falls back to
+// bundled defaults if unreachable), then mount.
+loadConfig().finally(mount);
+
+function mount() {
+  ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <div className="aurora">
       <span />
@@ -32,4 +38,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       </WagmiProvider>
     </ErrorBoundary>
   </React.StrictMode>,
-);
+  );
+}

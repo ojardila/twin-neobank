@@ -28,10 +28,13 @@ spec:
           env:
             - name: PORT
               value: {{ .Values.backend.port | quote }}
-          {{- with .Values.backend.envFrom }}
           envFrom:
+            # Contract/chain config (addresses, EIDs, chain ids) — see configmap.yaml.
+            - configMapRef:
+                name: twin-neobank-config
+            {{- with .Values.backend.envFrom }}
             {{- toYaml . | nindent 12 }}
-          {{- end }}
+            {{- end }}
           resources:
             {{- toYaml .Values.backend.resources | nindent 12 }}
           readinessProbe:
