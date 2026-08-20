@@ -49,3 +49,27 @@ ingress:
     secretName: argt-space-tls
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
+
+# On-chain config — surfaced to the backend via a ConfigMap (and to the frontend
+# via /api/config). Change here to point at different contracts/chains.
+config:
+  argtToken: "0x59863989d080B22476DB95656d0C3CC18be92214"
+  argtDecimals: "18"
+  vaultAddress: "0x9Dd3F844747AB78d616BF76DB92756E17A064aDD"
+  vaultChain: "arbitrum"
+  chains:
+    arbitrum:
+      chainId: "42161"
+      lzEid: "30110"
+      adapter: "0x4821FBf47B261F0D52Ba0F941CF67b8648f82691"
+      rpc: "https://arb1.arbitrum.io/rpc"
+    base:
+      chainId: "8453"
+      lzEid: "30184"
+      adapter: "0xe80Af1d12426dB4394b147e04f179a38e7C5Dfe7"
+      rpc: "https://mainnet.base.org"
+    polygon:
+      chainId: "137"
+      lzEid: "30109"
+      adapter: "0xD70ad085684b2A9f4B5d54D7BDB2ecA37a273216"
+      rpc: "https://polygon-rpc.com"

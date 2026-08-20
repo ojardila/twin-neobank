@@ -39,3 +39,24 @@ func TestLoadDefaults(t *testing.T) {
 		}
 	}
 }
+
+func TestLoadEnvOverride(t *testing.T) {
+	t.Setenv("ARGT_TOKEN", "0xDEADBEEF")
+	t.Setenv("ARGT_DECIMALS", "6")
+	t.Setenv("LZ_EID_BASE", "40184")
+	t.Setenv("BRIDGE_ADAPTER_POLYGON", "0xABC")
+
+	c := Load()
+	if c.ARGtToken != "0xDEADBEEF" {
+		t.Errorf("ARGT_TOKEN override = %s", c.ARGtToken)
+	}
+	if c.ARGtDecimals != 6 {
+		t.Errorf("ARGT_DECIMALS override = %d", c.ARGtDecimals)
+	}
+	if c.Chains["base"].LzEid != 40184 {
+		t.Errorf("LZ_EID_BASE override = %d", c.Chains["base"].LzEid)
+	}
+	if c.Chains["polygon"].BridgeAdapter != "0xABC" {
+		t.Errorf("BRIDGE_ADAPTER_POLYGON override = %s", c.Chains["polygon"].BridgeAdapter)
+	}
+}

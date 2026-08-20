@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: twin-neobank-config
+  labels:
+    {{- include "twin-neobank.labels" . | nindent 4 }}
+data:
+  # Token / vault
+  ARGT_TOKEN: {{ .Values.config.argtToken | quote }}
+  ARGT_DECIMALS: {{ .Values.config.argtDecimals | quote }}
+  VAULT_ADDRESS: {{ .Values.config.vaultAddress | quote }}
+  VAULT_CHAIN: {{ .Values.config.vaultChain | quote }}
+  # Chain ids
+  CHAIN_ARBITRUM_ID: {{ .Values.config.chains.arbitrum.chainId | quote }}
+  CHAIN_BASE_ID: {{ .Values.config.chains.base.chainId | quote }}
+  CHAIN_POLYGON_ID: {{ .Values.config.chains.polygon.chainId | quote }}
+  # LayerZero endpoint ids
+  LZ_EID_ARBITRUM: {{ .Values.config.chains.arbitrum.lzEid | quote }}
+  LZ_EID_BASE: {{ .Values.config.chains.base.lzEid | quote }}
+  LZ_EID_POLYGON: {{ .Values.config.chains.polygon.lzEid | quote }}
+  # OFT bridge adapters
+  BRIDGE_ADAPTER_ARBITRUM: {{ .Values.config.chains.arbitrum.adapter | quote }}
+  BRIDGE_ADAPTER_BASE: {{ .Values.config.chains.base.adapter | quote }}
+  BRIDGE_ADAPTER_POLYGON: {{ .Values.config.chains.polygon.adapter | quote }}
+  # RPC endpoints (override with your own for reliability)
+  RPC_ARBITRUM: {{ .Values.config.chains.arbitrum.rpc | quote }}
+  RPC_BASE: {{ .Values.config.chains.base.rpc | quote }}
+  RPC_POLYGON: {{ .Values.config.chains.polygon.rpc | quote }}
