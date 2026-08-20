@@ -27,7 +27,7 @@ export function TransferCard({ initialTo, initialAmount, initialNote }: Props) {
   const [to, setTo] = useState(initialTo ?? "");
   const [amount, setAmount] = useState(initialAmount ?? "");
   const [confirming, setConfirming] = useState(false);
-  const balance = useArgtRaw();
+  const { balance, refetch: refetchBalance } = useArgtRaw();
   const toast = useToast();
   const { writeContract, data: hash, isPending, error, reset } = useWriteContract();
   const { isLoading: mining, isSuccess } = useWaitForTransactionReceipt({ hash });
@@ -40,6 +40,7 @@ export function TransferCard({ initialTo, initialAmount, initialNote }: Props) {
     if (isSuccess) {
       toast.push("success", "Transfer confirmed", `${amount} ARGt sent to ${shortAddr(to)}`);
       setConfirming(false);
+      refetchBalance();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccess]);
