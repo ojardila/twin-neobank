@@ -12,6 +12,7 @@ import { ERC20_ABI } from "../lib/abis/erc20";
 import { ERC4626_ABI } from "../lib/abis/erc4626";
 import { friendlyError } from "../lib/errors";
 import { useArgtRaw } from "../lib/useArgtRaw";
+import { useEnsureChain } from "../lib/useEnsureChain";
 import { PercentButtons } from "./PercentButtons";
 import { useToast } from "./Toast";
 
@@ -22,6 +23,7 @@ export function VaultCard() {
     "approve" | "deposit" | "withdraw" | null
   >(null);
   const { balance, refetch: refetchBalance } = useArgtRaw();
+  const ensureChain = useEnsureChain();
   const toast = useToast();
   const { writeContract, data: hash, isPending, error } = useWriteContract();
   const { isLoading: confirming, isSuccess } = useWaitForTransactionReceipt({ hash });
@@ -75,8 +77,14 @@ export function VaultCard() {
   const needsApprove =
     (allowance as bigint | undefined) !== undefined && (allowance as bigint) < amountWei;
 
-  function approve() {
+  async function approve() {
     setLastAction("approve");
+    try {
+      await ensureChain(VAULT.chainId);
+    } catch {
+      toast.push("error", "Switch network", "Approve on the Arbitrum network");
+      return;
+    }
     writeContract({
       address: ARGT.address,
       abi: ERC20_ABI,
@@ -87,9 +95,15 @@ export function VaultCard() {
       chainId: ARGT.chainId,
     });
   }
-  function deposit() {
+  async function deposit() {
     if (!address) return;
     setLastAction("deposit");
+    try {
+      await ensureChain(VAULT.chainId);
+    } catch {
+      toast.push("error", "Switch network", "Deposit on the Arbitrum network");
+      return;
+    }
     writeContract({
       address: VAULT.address,
       abi: ERC4626_ABI,
@@ -98,9 +112,15 @@ export function VaultCard() {
       chainId: VAULT.chainId,
     });
   }
-  function withdrawAll() {
+  async function withdrawAll() {
     if (!address || shares === undefined) return;
     setLastAction("withdraw");
+    try {
+      await ensureChain(VAULT.chainId);
+    } catch {
+      toast.push("error", "Switch network", "Withdraw on the Arbitrum network");
+      return;
+    }
     writeContract({
       address: VAULT.address,
       abi: ERC4626_ABI,
