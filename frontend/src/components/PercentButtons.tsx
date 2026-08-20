@@ -1,6 +1,6 @@
 // Quick amount picker: 10% / 25% / 50% / Max of a balance.
-import { formatUnits } from "viem";
 import { ARGT } from "../lib/contracts";
+import { pctAmount } from "../lib/amount";
 
 const STEPS: { label: string; pct: bigint }[] = [
   { label: "10%", pct: 10n },
@@ -8,11 +8,6 @@ const STEPS: { label: string; pct: bigint }[] = [
   { label: "50%", pct: 50n },
   { label: "Max", pct: 100n },
 ];
-
-// Trim trailing zeros from a decimal string for a cleaner input value.
-function trim(s: string) {
-  return s.includes(".") ? s.replace(/\.?0+$/, "") : s;
-}
 
 export function PercentButtons({
   balance,
@@ -32,8 +27,7 @@ export function PercentButtons({
           disabled={disabled}
           onClick={() => {
             if (balance === undefined) return;
-            const v = (balance * s.pct) / 100n;
-            onPick(trim(formatUnits(v, ARGT.decimals)));
+            onPick(pctAmount(balance, s.pct, ARGT.decimals));
           }}
         >
           {s.label}

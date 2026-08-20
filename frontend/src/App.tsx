@@ -3,6 +3,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useChainId } from "wagmi";
 import { arbitrum, base, polygon } from "wagmi/chains";
 import { useArgtBalance } from "./lib/useArgtBalance";
+import { useTheme, ACCENTS } from "./lib/theme";
 import { TransferCard } from "./components/TransferCard";
 import { VaultCard } from "./components/VaultCard";
 import { BridgeCard } from "./components/BridgeCard";
@@ -28,6 +29,7 @@ function prefillFromUrl() {
 export default function App() {
   const { isConnected } = useAccount();
   const chainId = useChainId();
+  const { theme, accent, setAccent, toggleTheme } = useTheme();
   const prefill = useMemo(prefillFromUrl, []);
   const [tab, setTab] = useState<Tab>(prefill.hasRequest ? "send" : "home");
   const { formatted, isLoading, received } = useArgtBalance();
@@ -44,7 +46,29 @@ export default function App() {
           <span className="logo">🏦</span>
           <span>Twin Wallet</span>
         </div>
-        <ConnectButton showBalance={false} accountStatus="avatar" chainStatus="none" />
+        <div className="appearance">
+          <div className="swatches">
+            {ACCENTS.map((a) => (
+              <button
+                key={a.key}
+                className={`swatch${accent === a.key ? " active" : ""}`}
+                style={{ background: a.swatch }}
+                title={a.label}
+                aria-label={`Accent ${a.label}`}
+                onClick={() => setAccent(a.key)}
+              />
+            ))}
+          </div>
+          <button
+            className="icon-btn"
+            onClick={toggleTheme}
+            title="Toggle light/dark"
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? "☀️" : "🌙"}
+          </button>
+          <ConnectButton showBalance={false} accountStatus="avatar" chainStatus="none" />
+        </div>
       </div>
 
       {!isConnected ? (
