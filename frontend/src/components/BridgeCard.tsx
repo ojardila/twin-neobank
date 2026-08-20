@@ -186,8 +186,18 @@ export function BridgeCard() {
               target="_blank"
               rel="noreferrer"
             >
-              <span>
+              <span className="bridge-route">
                 {eidName(b.srcEid)} → {eidName(b.dstEid)}
+                {b.created && (
+                  <span className="bridge-date">
+                    {new Date(b.created).toLocaleString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                )}
               </span>
               <span className={`bridge-status st-${b.status.toLowerCase()}`}>
                 {b.status}

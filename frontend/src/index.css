@@ -822,3 +822,13 @@ a {
   font-size: 11.5px;
   margin-top: 6px;
 }
+
+.bridge-route {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.bridge-date {
+  color: var(--muted);
+  font-size: 11px;
+}
