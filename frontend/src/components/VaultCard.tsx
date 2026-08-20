@@ -26,7 +26,7 @@ export function VaultCard() {
   const { writeContract, data: hash, isPending, error } = useWriteContract();
   const { isLoading: confirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
-  const { data: shares } = useReadContract({
+  const { data: shares, refetch: refetchShares } = useReadContract({
     address: VAULT.address,
     abi: ERC4626_ABI,
     functionName: "balanceOf",
@@ -34,7 +34,7 @@ export function VaultCard() {
     chainId: VAULT.chainId,
     query: { enabled: !!address, refetchInterval: 15_000 },
   });
-  const { data: assets } = useReadContract({
+  const { data: assets, refetch: refetchAssets } = useReadContract({
     address: VAULT.address,
     abi: ERC4626_ABI,
     functionName: "convertToAssets",
@@ -42,7 +42,7 @@ export function VaultCard() {
     chainId: VAULT.chainId,
     query: { enabled: shares !== undefined },
   });
-  const { data: allowance } = useReadContract({
+  const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: ARGT.address,
     abi: ERC20_ABI,
     functionName: "allowance",
@@ -59,6 +59,10 @@ export function VaultCard() {
       toast.push("success", "Deposited", "Your ARGt is now earning in the vault");
     else if (lastAction === "withdraw")
       toast.push("success", "Withdrawn", "Funds returned to your wallet");
+    // Refresh position/allowance immediately instead of waiting for the poll.
+    refetchShares();
+    refetchAssets();
+    refetchAllowance();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccess]);
   useEffect(() => {
