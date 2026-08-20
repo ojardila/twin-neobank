@@ -144,8 +144,14 @@ export function VaultCard() {
       <div className="position-box">
         <div className="muted" style={{ fontSize: 12 }}>Your investment</div>
         <div className="position-value">
-          {positionValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-          <span className="ticker"> ARGt</span>
+          {address && assets === undefined ? (
+            <span className="skeleton-bar" style={{ height: 30, width: 150 }} />
+          ) : (
+            <span className="amount-value">
+              {positionValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              <span className="ticker"> ARGt</span>
+            </span>
+          )}
         </div>
         {hasPosition ? (
           <>

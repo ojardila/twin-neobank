@@ -38,7 +38,7 @@ export default function App() {
   );
   const prefill = useMemo(prefillFromUrl, []);
   const [tab, setTab] = useState<Tab>(prefill.hasRequest ? "send" : "home");
-  const { formatted, isLoading, received } = useArgtBalance();
+  const { formatted, received } = useArgtBalance();
 
   const balanceText =
     formatted !== undefined
@@ -102,13 +102,13 @@ export default function App() {
           <div className={`card hero${received ? " received" : ""}`}>
             <div className="eyebrow">Total balance</div>
             <div className="amount">
-              {isLoading ? (
-                <span className="skeleton">0000.00</span>
+              {formatted === undefined ? (
+                <span className="skeleton-bar" aria-label="Loading balance" />
               ) : (
-                <>
+                <span className="amount-value">
                   {balanceText}
                   <span className="ticker">ARGt</span>
-                </>
+                </span>
               )}
             </div>
             <div className="net">
