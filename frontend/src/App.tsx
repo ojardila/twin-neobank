@@ -8,6 +8,7 @@ import { TransferCard } from "./components/TransferCard";
 import { VaultCard } from "./components/VaultCard";
 import { BridgeCard } from "./components/BridgeCard";
 import { RequestCard } from "./components/RequestCard";
+import { useToast } from "./components/Toast";
 
 type Tab = "home" | "send" | "earn" | "bridge" | "request";
 
@@ -142,17 +143,19 @@ export default function App() {
             ))}
           </div>
 
-          {tab === "home" && <HomePanel onGo={setTab} />}
-          {tab === "send" && (
-            <TransferCard
-              initialTo={prefill.to}
-              initialAmount={prefill.amount}
-              initialNote={prefill.note}
-            />
-          )}
-          {tab === "earn" && <VaultCard />}
-          {tab === "bridge" && <BridgeCard />}
-          {tab === "request" && <RequestCard />}
+          <div key={tab} className="panel">
+            {tab === "home" && <HomePanel onGo={setTab} />}
+            {tab === "send" && (
+              <TransferCard
+                initialTo={prefill.to}
+                initialAmount={prefill.amount}
+                initialNote={prefill.note}
+              />
+            )}
+            {tab === "earn" && <VaultCard />}
+            {tab === "bridge" && <BridgeCard />}
+            {tab === "request" && <RequestCard />}
+          </div>
         </>
       )}
 
@@ -165,6 +168,19 @@ export default function App() {
 }
 
 function HomePanel({ onGo }: { onGo: (t: Tab) => void }) {
+  const { address } = useAccount();
+  const toast = useToast();
+
+  async function copyAddress() {
+    if (!address) return;
+    try {
+      await navigator.clipboard.writeText(address);
+      toast.push("success", "Address copied", "Share it to receive ARGt");
+    } catch {
+      toast.push("error", "Could not copy", address);
+    }
+  }
+
   return (
     <div className="card">
       <h2>Your money</h2>
@@ -172,6 +188,15 @@ function HomePanel({ onGo }: { onGo: (t: Tab) => void }) {
         ARGt is a peso-backed stablecoin by Twin. Move it instantly, earn yield in the
         Morpho vault, or bridge it across chains — all from one place.
       </p>
+      {address && (
+        <button className="addr-chip" onClick={copyAddress} title="Copy your address">
+          <span className="muted">Your address</span>
+          <span className="addr-value">
+            {address.slice(0, 6)}…{address.slice(-4)}
+          </span>
+          <span className="addr-copy">Copy ⧉</span>
+        </button>
+      )}
       <button className="btn wide" onClick={() => onGo("send")}>
         Send ARGt
       </button>

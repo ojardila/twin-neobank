@@ -7,6 +7,7 @@ import { ARGT } from "../lib/contracts";
 import { ERC20_ABI } from "../lib/abis/erc20";
 import { friendlyError } from "../lib/errors";
 import { useArgtRaw } from "../lib/useArgtRaw";
+import { exceedsBalance } from "../lib/validate";
 import { PercentButtons } from "./PercentButtons";
 import { useToast } from "./Toast";
 
@@ -29,7 +30,8 @@ export function TransferCard({ initialTo, initialAmount, initialNote }: Props) {
   const { writeContract, data: hash, isPending, error, reset } = useWriteContract();
   const { isLoading: mining, isSuccess } = useWaitForTransactionReceipt({ hash });
 
-  const valid = isAddress(to) && Number(amount) > 0;
+  const insufficient = exceedsBalance(amount, balance, ARGT.decimals);
+  const valid = isAddress(to) && Number(amount) > 0 && !insufficient;
   const busy = isPending || mining;
 
   useEffect(() => {
@@ -108,9 +110,20 @@ export function TransferCard({ initialTo, initialAmount, initialNote }: Props) {
         onChange={(e) => setAmount(e.target.value)}
       />
       <PercentButtons balance={balance} onPick={setAmount} />
+      {insufficient && <div className="hint-bad">Insufficient ARGt balance</div>}
       <button className="btn wide" disabled={!valid} onClick={() => setConfirming(true)}>
         Review transfer
       </button>
+      {isSuccess && hash && (
+        <a
+          className="track-link"
+          href={`https://arbiscan.io/tx/${hash}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          View on Arbiscan ↗
+        </a>
+      )}
     </div>
   );
 }
