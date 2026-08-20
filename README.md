@@ -1,87 +1,146 @@
-# Twin Neobank — ARGt Wallet
+<div align="center">
 
-Wallet no custodial para las stablecoins de **Twin** (ARGt), construida para el challenge
-[*Twin your Neobank*](./docs/challenge.md) (LATAM Digital Assets Conference).
+# 🏦 Twin Neobank — ARGt Wallet
 
-🌐 **Live:** https://argt.space
+**Non-custodial wallet for Twin's ARGt stablecoin — send, earn and bridge across chains.**
 
-## Features
+Built for the [*Twin your Neobank*](./docs/challenge.md) challenge · LATAM Digital Assets Conference.
 
-**Milestones**
-- **M1 — Balance & Transfers** de ARGt (Arbitrum), con confirmación previa y guard de saldo.
-- **M2 — Vault Morpho** (ERC-4626): depositar/retirar ARGt, con vista de inversión y shares.
-- **M3 — Bridge** cross-chain vía OFT de LayerZero V2 (Arbitrum ↔ Base ↔ Polygon), con
-  tracking en LayerZeroScan.
+[![Live](https://img.shields.io/badge/live-argt.space-5b8cff)](https://argt.space)
+[![License: MIT](https://img.shields.io/badge/license-MIT-34d399.svg)](./LICENSE)
+[![Made with React](https://img.shields.io/badge/React-wagmi%2Fviem-61dafb)](https://wagmi.sh)
+[![Backend: Go](https://img.shields.io/badge/backend-Go-00add8)](https://go.dev)
+[![K8s: Helm](https://img.shields.io/badge/deploy-Helm%20on%20DOKS-326ce5)](./deploy/helm)
 
-**Extras de UX**
-- Links de **cobro/request** con QR.
-- **Temas** claro/oscuro + 4 colores de acento (persistidos).
-- Botones de **% (10/25/50/Max)**, spinners, errores amigables, banner de red incorrecta.
-- Accesibilidad (`prefers-reduced-motion`) y PWA (favicon + manifest, add-to-home-screen).
+🌐 **[argt.space](https://argt.space)**
 
-Las transacciones se firman **en la wallet del usuario** (MetaMask/WalletConnect). El backend
-es de solo lectura y nunca maneja claves.
+</div>
 
-## Stack
+---
 
-| Capa | Tecnología |
+## Overview
+
+Twin Neobank is a production-deployed, non-custodial wallet for **ARGt** (a peso-backed
+stablecoin by Twin). It covers the challenge's three milestones and adds a polished,
+mobile-first UX. **Keys never leave the user's wallet** — every state-changing transaction
+is signed client-side (MetaMask/WalletConnect); the Go backend is strictly read-only.
+
+## Highlights
+
+| | |
 |---|---|
-| Frontend | React + Vite + TypeScript, wagmi/viem, RainbowKit |
-| Backend | Go (stdlib `net/http`, JSON-RPC `eth_call` — sin dependencias externas) |
-| Contenedores | Docker (multi-stage), nginx para el SPA |
-| Orquestación | Kubernetes vía **Helm** (`deploy/helm/twin-neobank`) |
-| Infra | Terraform → DigitalOcean (DOKS + DOCR + DNS), cert-manager/Let's Encrypt |
-| CI/CD | GitHub Actions — App CI (build/test) + Release pipeline (infra→deploy→smoke) |
-| Tests | Go (`go test`) + frontend (`vitest`) |
+| 💸 **Send** | Transfer ARGt on Arbitrum with a review/confirm step, balance guard, and Arbiscan link |
+| ✦ **Earn** | Deposit/withdraw in the Morpho ERC-4626 vault, with a live investment view (value + shares) |
+| ⇄ **Bridge** | Move ARGt across Arbitrum/Base/Polygon via LayerZero V2 OFT, with **history + delivery status** |
+| 🔗 **Request** | Shareable payment-request links with QR |
+| 🎨 **Personalize** | Light/dark themes + 4 accent colors (persisted) |
+| 🛡️ **Robust** | Auto-switch to Arbitrum, error boundary, friendly errors, reduced-motion, PWA |
 
-## Correr local (docker-compose)
+## Architecture
+
+```
+ Browser (React SPA + wallet)
+   │  reads: wagmi/viem ─────────────► RPC (Arbitrum / Base / Polygon)
+   │  reads: /api/* ──► Go backend ──► RPC + LayerZeroScan
+   │  writes: signed in the user's wallet ─► smart contracts
+   ▼
+ nginx (SPA)  ──ingress──►  DOKS (Kubernetes) on DigitalOcean
+```
+
+Full diagrams (system, per-flow sequences, deployment/CI-CD) live in
+[`docs/architecture.md`](./docs/architecture.md), [`docs/flows.md`](./docs/flows.md) and
+[`docs/deployment.md`](./docs/deployment.md).
+
+## Milestones & contracts
+
+| Milestone | What | Contracts |
+|---|---|---|
+| **M1** | ARGt balance + transfers | ARGt `0x5986…2214` (Arbitrum, 18 dec) |
+| **M2** | Morpho ERC-4626 vault | Vault `0x9Dd3…4aDD` (Arbitrum) |
+| **M3** | LayerZero V2 OFT bridge | Adapters — Arbitrum `0x4821…2691` · Base `0xe80A…Dfe7` · Polygon `0xD70a…3216` |
+
+See [`docs/challenge.md`](./docs/challenge.md) for full addresses and LayerZero EIDs.
+
+## Tech stack
+
+| Layer | Tech |
+|---|---|
+| Frontend | React + Vite + TypeScript · wagmi/viem · RainbowKit |
+| Backend | Go (stdlib `net/http`, JSON-RPC `eth_call`, LayerZeroScan proxy — no external deps) |
+| Containers | Docker (multi-stage) · nginx |
+| Orchestration | Kubernetes via Helm |
+| Infra | Terraform → DigitalOcean (DOKS + DOCR + DNS) · cert-manager/Let's Encrypt |
+| CI/CD | GitHub Actions — App CI + Release pipeline (infra → deploy → smoke) |
+| Tests | Go `go test` + frontend `vitest` |
+
+## Getting started
 
 ```bash
+# Full stack (mirrors prod)
 docker compose up --build
-# Frontend: http://localhost:3000
-# API:      http://localhost:8080/api/config
+#   Frontend → http://localhost:3000
+#   API      → http://localhost:8080/api/config
 ```
 
-Dev con hot reload:
+Dev with hot reload:
 
 ```bash
-cd backend && go run ./cmd/server         # :8080
-cd frontend && npm install && npm run dev  # :5173
+cd backend && go run ./cmd/server          # :8080
+cd frontend && npm install && npm run dev   # :5173
 ```
 
-Tests:
+Run the tests:
 
 ```bash
 cd backend && go test ./...
 cd frontend && npm test
 ```
 
-Ver [`docs/local-development.md`](./docs/local-development.md) para más detalle.
+More detail in [`docs/local-development.md`](./docs/local-development.md).
 
-## Deploy (DigitalOcean)
+## Backend API (read-only)
 
-Ver [`infra/README.md`](./infra/README.md). Resumen:
+| Endpoint | Description |
+|---|---|
+| `GET /healthz`, `/readyz` | Liveness/readiness |
+| `GET /api/config` | Chain + contract metadata (single source of truth for the UI) |
+| `GET /api/balance?address=&chain=` | ARGt balance |
+| `GET /api/vault?address=` | Vault shares + underlying value |
+| `GET /api/bridges?address=` | Bridge history + delivery status (via LayerZeroScan) |
 
-1. `terraform apply` en `infra/terraform` → crea **DOKS + DOCR + zona DNS**.
-2. Publicar un **GitHub Release** (`vX.Y.Z`) → dispara el pipeline `🚀 Release`:
-   `infra` (converge ingress-nginx estándar + cert-manager + sync DNS) →
-   `deploy` (build/push a DOCR + `helm upgrade`) → `smoke` test.
+## Deploy
 
-El deploy a K8s se hace con **Helm** (`helm upgrade --install twin-neobank deploy/helm/twin-neobank`).
+1. `terraform apply` in [`infra/terraform`](./infra/terraform) → DOKS + DOCR + DNS zone.
+2. Publish a GitHub Release (`vX.Y.Z`) → the `🚀 Release` pipeline converges infra
+   (ingress-nginx + cert-manager + DNS sync), builds/pushes images to DOCR,
+   `helm upgrade`s, and smoke-tests.
 
-## Estructura
+See [`infra/README.md`](./infra/README.md).
+
+## Project structure
 
 ```
-backend/            API Go de solo lectura (balances, vault, config) + tests
-frontend/           SPA React (wallet + milestones + temas) + tests (vitest)
-deploy/helm/        Helm chart (deployments, services, ingress + TLS)
-deploy/scripts/     sync-dns.sh (reconcilia DNS a la IP del LB)
-deploy/cert-manager/ ClusterIssuer Let's Encrypt
-infra/terraform/    IaC DigitalOcean (cluster, registry, zona DNS)
-docs/               Challenge, arquitectura, flujos, deployment, local dev
+backend/             Read-only Go API + tests
+frontend/            React SPA (wallet + themes) + vitest tests
+deploy/helm/         Helm chart (deployments, services, ingress + TLS)
+deploy/scripts/      sync-dns.sh (DNS → LB IP)
+deploy/cert-manager/ Let's Encrypt ClusterIssuer
+infra/terraform/     IaC for DigitalOcean
+docs/                Challenge, architecture, flows, deployment, local dev
 ```
+
+## Security
+
+- **Non-custodial:** the app never has access to private keys; all writes are signed in the
+  user's wallet.
+- **Read-only backend:** the Go service only performs `eth_call` reads and proxies public data.
+- **Exact approvals:** vault/bridge approvals request the exact amount, not an unlimited cap.
+
+## License
+
+[MIT](./LICENSE) — open source. Contributions welcome.
 
 ---
 
-> Twin Stablecoins son instrumentos de pago digital respaldados por reservas. No son valores
-> negociables ni productos de inversión.
+> Twin Stablecoins are digital payment instruments backed by reserves. They are not
+> securities or investment products.

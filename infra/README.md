@@ -1,12 +1,12 @@
 # Infra
 
-Infraestructura como código para el neobanco.
+Infrastructure as code for the neobank.
 
-- [`terraform/`](./terraform) — DOKS cluster + DOCR registry + pull secret (DigitalOcean).
+- [`terraform/`](./terraform) — DOKS cluster + DOCR registry + pull secret + DNS zone (DigitalOcean).
 
-## Orden de despliegue
+## Deploy order
 
-1. **Provisionar** con Terraform:
+1. **Provision** with Terraform:
    ```bash
    cd infra/terraform
    export TF_VAR_do_token="$(tr -d '\n' < ~/.tokens/digitalocean)"
@@ -14,27 +14,23 @@ Infraestructura como código para el neobanco.
    doctl kubernetes cluster kubeconfig save twin-neobank
    ```
 
-2. **Ingress controller** (una vez por cluster) — provisiona un Load Balancer de DO:
+2. **App** — publish a GitHub Release (`vX.Y.Z`); the `🚀 Release` pipeline
+   (`.github/workflows/release.yml`) converges infra (standard ingress-nginx +
+   cert-manager + DNS sync), then builds/pushes images to DOCR and runs
+   `helm upgrade --install twin-neobank deploy/helm/twin-neobank`, then smoke-tests.
+
+   Manual deploy (if needed):
    ```bash
-   kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/do/deploy.yaml
+   helm upgrade --install twin-neobank deploy/helm/twin-neobank \
+     -n twin-neobank --set backend.image.tag=vX.Y.Z --set frontend.image.tag=vX.Y.Z --wait
    ```
 
-3. **App** — el pipeline de GitHub Actions (`.github/workflows/cd.yml`) hace build/push
-   a DOCR y `kubectl apply -k deploy/k8s/overlays/prod` en cada push a `main`.
-   También podés hacerlo a mano:
-   ```bash
-   kubectl apply -k deploy/k8s/overlays/prod
-   ```
-
-4. **DNS** — apuntá `twin-neobank.example.com` (en `deploy/k8s/base/ingress.yaml`) a la IP
-   del Load Balancer:
-   ```bash
-   kubectl -n ingress-nginx get svc ingress-nginx-controller
-   ```
+3. **DNS** — the pipeline runs [`deploy/scripts/sync-dns.sh`](../deploy/scripts/sync-dns.sh),
+   which points the domain's records at the ingress Load Balancer IP automatically.
 
 ## Teardown
 
 ```bash
-kubectl delete -k deploy/k8s/overlays/prod
-cd infra/terraform && terraform destroy   # libera cluster, registry y LB
+helm uninstall twin-neobank -n twin-neobank
+cd infra/terraform && terraform destroy   # frees cluster, registry and LB
 ```

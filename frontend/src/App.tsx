@@ -8,6 +8,7 @@ import { TransferCard } from "./components/TransferCard";
 import { VaultCard } from "./components/VaultCard";
 import { BridgeCard } from "./components/BridgeCard";
 import { RequestCard } from "./components/RequestCard";
+import { Footer } from "./components/Footer";
 import { useToast } from "./components/Toast";
 
 type Tab = "home" | "send" | "earn" | "bridge" | "request";
@@ -175,6 +176,7 @@ export default function App() {
         Twin Stablecoins are digital payment instruments backed by reserves. They are
         not securities or investment products.
       </p>
+      <Footer />
     </div>
   );
 }
