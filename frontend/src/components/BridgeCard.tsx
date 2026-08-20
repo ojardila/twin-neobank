@@ -14,6 +14,7 @@ import { BRIDGE_ADAPTER_ABI } from "../lib/abis/bridgeAdapter";
 import { ERC20_ABI } from "../lib/abis/erc20";
 import { friendlyError } from "../lib/errors";
 import { useArgtRaw } from "../lib/useArgtRaw";
+import { useBridges, eidName } from "../lib/useBridges";
 import { layerZeroTx } from "../lib/links";
 import { PercentButtons } from "./PercentButtons";
 import { Spinner } from "./Spinner";
@@ -30,6 +31,7 @@ export function BridgeCard() {
   const [amount, setAmount] = useState("");
   const dest = BRIDGE_CHAINS.find((c) => c.key === destKey) ?? dests[0];
   const { balance, refetch: refetchBalance } = useArgtRaw(chainId);
+  const { bridges, refetch: refetchBridges } = useBridges(address);
 
   const { writeContract, data: hash, isPending, error } = useWriteContract();
   const { isLoading: confirming, isSuccess } = useWaitForTransactionReceipt({ hash });
@@ -39,6 +41,10 @@ export function BridgeCard() {
       toast.push("success", "Bridge initiated", `Funds arrive on ${dest?.name} soon`);
       refetchBalance();
       refetchAllowance();
+      // LayerZero needs a bit to index; nudge the history a few times.
+      refetchBridges();
+      setTimeout(refetchBridges, 8000);
+      setTimeout(refetchBridges, 20000);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccess]);
@@ -165,6 +171,30 @@ export function BridgeCard() {
         >
           Track delivery on LayerZeroScan ↗
         </a>
+      )}
+
+      {bridges.length > 0 && (
+        <div className="bridge-history">
+          <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>
+            Bridge history
+          </div>
+          {bridges.map((b) => (
+            <a
+              key={b.srcTxHash}
+              className="bridge-row"
+              href={layerZeroTx(b.srcTxHash)}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span>
+                {eidName(b.srcEid)} → {eidName(b.dstEid)}
+              </span>
+              <span className={`bridge-status st-${b.status.toLowerCase()}`}>
+                {b.status}
+              </span>
+            </a>
+          ))}
+        </div>
       )}
     </div>
   );

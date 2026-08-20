@@ -743,3 +743,50 @@ a {
     animation: none !important;
   }
 }
+
+/* Bridge history */
+.bridge-history {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--glass-brd);
+}
+.bridge-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-top: 6px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-brd);
+  color: var(--text);
+  font-size: 13px;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.bridge-row:hover {
+  background: rgba(34, 211, 238, 0.12);
+}
+.bridge-status {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  text-transform: capitalize;
+}
+.st-delivered {
+  color: var(--good);
+  background: rgba(52, 211, 153, 0.15);
+}
+.st-inflight,
+.st-confirming,
+.st-pending {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.15);
+}
+.st-failed,
+.st-blocked {
+  color: var(--bad);
+  background: rgba(251, 113, 133, 0.15);
+}

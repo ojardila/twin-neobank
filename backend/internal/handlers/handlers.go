@@ -32,6 +32,7 @@ func (s *Server) Routes() http.Handler {
 	mux.HandleFunc("GET /api/config", s.getConfig)
 	mux.HandleFunc("GET /api/balance", s.getBalance)
 	mux.HandleFunc("GET /api/vault", s.getVault)
+	mux.HandleFunc("GET /api/bridges", s.getBridges)
 	return s.withMiddleware(mux)
 }
 
