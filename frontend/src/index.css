@@ -498,6 +498,30 @@ a {
   font-weight: 600;
 }
 
+/* Wrong-network banner */
+.net-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  border-radius: 14px;
+  background: rgba(251, 113, 133, 0.12);
+  border: 1px solid rgba(251, 113, 133, 0.35);
+  font-size: 13.5px;
+  font-weight: 600;
+  animation: fadeUp 0.4s both;
+}
+.net-banner span {
+  flex: 1;
+  min-width: 200px;
+}
+.net-banner .btn {
+  padding: 9px 14px;
+  font-size: 13px;
+}
+
 /* Inline validation hint */
 .hint-bad {
   margin-top: 10px;
