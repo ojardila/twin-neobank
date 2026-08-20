@@ -1,12 +1,15 @@
-// Raw ARGt balance (bigint) for a chain, with no side effects — used to power
-// the percentage quick-pick buttons. (useArgtBalance is the toast-firing one.)
+// Raw ARGt balance (bigint) for a chain, plus a refetch to refresh right after a
+// transaction. (useArgtBalance is the toast-firing hero variant.)
 import { useAccount, useReadContract } from "wagmi";
 import { ARGT } from "./contracts";
 import { ERC20_ABI } from "./abis/erc20";
 
-export function useArgtRaw(chainId: number = ARGT.chainId): bigint | undefined {
+export function useArgtRaw(chainId: number = ARGT.chainId): {
+  balance: bigint | undefined;
+  refetch: () => void;
+} {
   const { address } = useAccount();
-  const { data } = useReadContract({
+  const { data, refetch } = useReadContract({
     address: ARGT.address,
     abi: ERC20_ABI,
     functionName: "balanceOf",
@@ -14,5 +17,5 @@ export function useArgtRaw(chainId: number = ARGT.chainId): bigint | undefined {
     chainId,
     query: { enabled: !!address, refetchInterval: 15_000 },
   });
-  return data as bigint | undefined;
+  return { balance: data as bigint | undefined, refetch };
 }

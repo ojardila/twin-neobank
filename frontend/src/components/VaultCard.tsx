@@ -21,7 +21,7 @@ export function VaultCard() {
   const [lastAction, setLastAction] = useState<
     "approve" | "deposit" | "withdraw" | null
   >(null);
-  const balance = useArgtRaw();
+  const { balance, refetch: refetchBalance } = useArgtRaw();
   const toast = useToast();
   const { writeContract, data: hash, isPending, error } = useWriteContract();
   const { isLoading: confirming, isSuccess } = useWaitForTransactionReceipt({ hash });
@@ -63,6 +63,7 @@ export function VaultCard() {
     refetchShares();
     refetchAssets();
     refetchAllowance();
+    refetchBalance();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccess]);
   useEffect(() => {

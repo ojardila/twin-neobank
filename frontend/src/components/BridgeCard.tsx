@@ -29,14 +29,17 @@ export function BridgeCard() {
   const [destKey, setDestKey] = useState(dests[0]?.key ?? "");
   const [amount, setAmount] = useState("");
   const dest = BRIDGE_CHAINS.find((c) => c.key === destKey) ?? dests[0];
-  const balance = useArgtRaw(chainId);
+  const { balance, refetch: refetchBalance } = useArgtRaw(chainId);
 
   const { writeContract, data: hash, isPending, error } = useWriteContract();
   const { isLoading: confirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
   useEffect(() => {
-    if (isSuccess)
+    if (isSuccess) {
       toast.push("success", "Bridge initiated", `Funds arrive on ${dest?.name} soon`);
+      refetchBalance();
+      refetchAllowance();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccess]);
   useEffect(() => {
@@ -59,7 +62,7 @@ export function BridgeCard() {
     };
   }, [address, dest, amountLD]);
 
-  const { data: allowance } = useReadContract({
+  const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: ARGT.address,
     abi: ERC20_ABI,
     functionName: "allowance",
