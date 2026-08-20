@@ -151,6 +151,16 @@ export function BridgeCard() {
           {busy ? "Sending…" : `Bridge to ${dest?.name}`}
         </button>
       )}
+      {isSuccess && hash && (
+        <a
+          className="track-link"
+          href={`https://layerzeroscan.com/tx/${hash}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Track delivery on LayerZeroScan ↗
+        </a>
+      )}
     </div>
   );
 }
