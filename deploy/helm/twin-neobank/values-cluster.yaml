@@ -7,16 +7,26 @@
 imagePullSecrets:
   - name: harbor-pull
 
+# Images are pinned to a commit, not :latest.
+#
+# With a floating tag and IfNotPresent, a node that already has an image called
+# "latest" never fetches the new one - CI pushes, the rollout restarts, and the
+# same old bundle keeps serving. That is how a frontend built without its
+# WalletConnect id stayed live after the fix was already in Harbor.
+#
+# Always-pull would also work but re-downloads on every restart; a real tag
+# means the digest changes when the code does, which is what Kubernetes
+# actually keys on.
 backend:
   image:
     repository: harbor.int.engp.io/twin-neobank/twin-neobank-backend
-    tag: latest
+    tag: bbed4e866b68102c24b2ae125746a36a3d618fda
   replicas: 2
 
 frontend:
   image:
     repository: harbor.int.engp.io/twin-neobank/twin-neobank-frontend
-    tag: latest
+    tag: bbed4e866b68102c24b2ae125746a36a3d618fda
   replicas: 2
 
 # Routed through Cilium's Gateway rather than an Ingress: ingress-nginx is
