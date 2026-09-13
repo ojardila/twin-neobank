@@ -1,0 +1,29 @@
+# Overrides for the self-hosted Talos cluster.
+#
+# Images come from Harbor on the tailnet rather than DigitalOcean's registry.
+# Harbor is not reachable from the internet, so the cluster pulls over its own
+# network and CI pushes by joining the tailnet for the duration of a build.
+
+imagePullSecrets:
+  - name: harbor-pull
+
+backend:
+  image:
+    repository: harbor.int.engp.io/twin-neobank/twin-neobank-backend
+    tag: latest
+  replicas: 2
+
+frontend:
+  image:
+    repository: harbor.int.engp.io/twin-neobank/twin-neobank-frontend
+    tag: latest
+  replicas: 2
+
+ingress:
+  enabled: true
+  className: nginx
+  host: argt.space
+  tls:
+    # Cloudflare terminates TLS at its edge and the tunnel carries plain HTTP
+    # from there, so there is no certificate for this cluster to present.
+    enabled: false

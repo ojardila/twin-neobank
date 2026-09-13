@@ -1,70 +1,78 @@
-name: App · CD
+name: Build and publish
 
-# Manual-only. The primary deploy path is the Release pipeline (release.yml),
-# which runs infra -> deploy in order. Use this for ad-hoc redeploys.
+# Builds both images and pushes them to Harbor. Deployment is not done here:
+# ArgoCD watches the manifests repo and rolls out what it finds, which keeps
+# cluster credentials out of GitHub entirely. The previous version stored a
+# kubeconfig as a secret and ran `helm upgrade` from the runner - a leaked
+# token there meant cluster admin.
+
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'deploy/Dockerfile.*'
+      - '.github/workflows/app-cd.yml'
   workflow_dispatch:
 
 env:
-  REGISTRY: registry.digitalocean.com
-  REGISTRY_NAME: twin-neobank-ojardila
-  CLUSTER_NAME: twin-neobank
-  NAMESPACE: twin-neobank
+  REGISTRY: harbor.int.engp.io
+  PROJECT: twin-neobank
 
 jobs:
-  build-deploy:
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install doctl
-        uses: digitalocean/action-doctl@v2
+      # Harbor lives on the tailnet and has no public address. The runner joins
+      # the tailnet for the length of the job, pushes, and disappears with it -
+      # nothing is exposed to the internet to make this work.
+      - name: Join the tailnet
+        uses: tailscale/github-action@v3
         with:
-          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
 
-      - name: Log in to DOCR
-        run: doctl registry login --expiry-seconds 1200
+      - name: Log in to Harbor
+        run: |
+          echo "${{ secrets.HARBOR_ROBOT_SECRET }}" | \
+            docker login "$REGISTRY" -u '${{ secrets.HARBOR_ROBOT_NAME }}' --password-stdin
 
       - uses: docker/setup-buildx-action@v3
 
-      - name: Build & push backend
+      - name: Build and push the backend
         uses: docker/build-push-action@v6
         with:
           context: .
           file: deploy/Dockerfile.backend
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.REGISTRY_NAME }}/twin-neobank-backend:latest
-            ${{ env.REGISTRY }}/${{ env.REGISTRY_NAME }}/twin-neobank-backend:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.PROJECT }}/twin-neobank-backend:latest
+            ${{ env.REGISTRY }}/${{ env.PROJECT }}/twin-neobank-backend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build & push frontend
+      - name: Build and push the frontend
         uses: docker/build-push-action@v6
         with:
           context: .
           file: deploy/Dockerfile.frontend
           push: true
-          build-args: |
-            VITE_API_BASE=
-            VITE_WC_PROJECT_ID=${{ vars.VITE_WC_PROJECT_ID }}
           tags: |
-            ${{ env.REGISTRY }}/${{ env.REGISTRY_NAME }}/twin-neobank-frontend:latest
-            ${{ env.REGISTRY }}/${{ env.REGISTRY_NAME }}/twin-neobank-frontend:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.PROJECT }}/twin-neobank-frontend:latest
+            ${{ env.REGISTRY }}/${{ env.PROJECT }}/twin-neobank-frontend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Save kubeconfig
-        run: doctl kubernetes cluster kubeconfig save "${{ env.CLUSTER_NAME }}"
-
-      - uses: azure/setup-helm@v4
-        with:
-          version: v3.16.1
-
-      - name: Deploy with Helm (pin SHA)
+      # Writing the digest back is what triggers a rollout: ArgoCD syncs the
+      # manifests repo, sees a new tag, and deploys. Pushing :latest alone would
+      # leave the cluster running whatever it pulled first.
+      - name: Record the built revision
         run: |
-          helm upgrade --install twin-neobank deploy/helm/twin-neobank \
-            --namespace "${{ env.NAMESPACE }}" --create-namespace \
-            --set backend.image.tag="${{ github.sha }}" \
-            --set frontend.image.tag="${{ github.sha }}" \
-            --wait --timeout 5m
+          echo "backend  ${{ env.REGISTRY }}/${{ env.PROJECT }}/twin-neobank-backend:${{ github.sha }}"  >> $GITHUB_STEP_SUMMARY
+          echo "frontend ${{ env.REGISTRY }}/${{ env.PROJECT }}/twin-neobank-frontend:${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
