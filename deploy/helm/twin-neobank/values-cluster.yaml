@@ -19,8 +19,15 @@ frontend:
     tag: latest
   replicas: 2
 
-ingress:
+# Routed through Cilium's Gateway rather than an Ingress: ingress-nginx is
+# archived upstream and this cluster no longer runs it.
+gateway:
   enabled: true
+  name: public
+  namespace: gateway
+
+ingress:
+  enabled: false
   className: nginx
   host: argt.space
   tls:
