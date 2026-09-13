@@ -63,6 +63,12 @@ jobs:
           context: .
           file: deploy/Dockerfile.frontend
           push: true
+          # Vite bakes VITE_* in at build time; there is no runtime config to
+          # fall back on. Without the WalletConnect id the bundle loads and
+          # then throws "No projectId found" before rendering anything.
+          build-args: |
+            VITE_WC_PROJECT_ID=${{ vars.VITE_WC_PROJECT_ID }}
+            VITE_API_BASE=
           tags: |
             ${{ env.REGISTRY }}/${{ env.PROJECT }}/twin-neobank-frontend:latest
             ${{ env.REGISTRY }}/${{ env.PROJECT }}/twin-neobank-frontend:${{ github.sha }}
