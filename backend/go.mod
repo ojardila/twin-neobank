@@ -1,3 +1,5 @@
 module github.com/ojardila/twin-neobank/backend
 
-go 1.22
+go 1.25.0
+
+toolchain go1.25.14
