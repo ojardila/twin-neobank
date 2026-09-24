@@ -20,13 +20,13 @@ imagePullSecrets:
 backend:
   image:
     repository: harbor.int.engp.io/twin-neobank/twin-neobank-backend
-    tag: bbed4e866b68102c24b2ae125746a36a3d618fda
+    tag: 3e6aeab84c334fbc96a56bf58a2841387cf85f7f
   replicas: 2
 
 frontend:
   image:
     repository: harbor.int.engp.io/twin-neobank/twin-neobank-frontend
-    tag: bbed4e866b68102c24b2ae125746a36a3d618fda
+    tag: 3e6aeab84c334fbc96a56bf58a2841387cf85f7f
   replicas: 2
 
 # Routed through Cilium's Gateway rather than an Ingress: ingress-nginx is
