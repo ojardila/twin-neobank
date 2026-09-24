@@ -1,0 +1,88 @@
+# Cilium Gateway (Envoy) assigns reserved:ingress on the hop to backends.
+# Standard NetworkPolicy cannot select that identity, so these are
+# CiliumNetworkPolicies. Pattern: default-deny + Gateway ingress + DNS egress.
+#
+# Backend calls public chain RPCs (Arbitrum/Base/Polygon) and LayerZero scan
+# over HTTPS. Those endpoints are CDN-backed and can move; allow world:443
+# for now and tighten to toFQDNs once Hubble confirms a stable set.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: twin-neobank-backend
+  labels:
+    app: twin-neobank-backend
+    {{- include "twin-neobank.labels" . | nindent 4 }}
+spec:
+  description: Default-deny with Gateway ingress, DNS, and HTTPS egress for twin-neobank-backend
+  endpointSelector:
+    matchLabels:
+      app: twin-neobank-backend
+  ingress:
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: {{ .Values.backend.port | quote }}
+              protocol: TCP
+    - fromEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: {{ .Values.backend.port | quote }}
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+---
+# nginx static frontend. Browser talks to WalletConnect / QR APIs directly;
+# the pod itself only needs DNS (if anything).
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: twin-neobank-frontend
+  labels:
+    app: twin-neobank-frontend
+    {{- include "twin-neobank.labels" . | nindent 4 }}
+spec:
+  description: Default-deny with Gateway ingress + DNS egress for twin-neobank-frontend
+  endpointSelector:
+    matchLabels:
+      app: twin-neobank-frontend
+  ingress:
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: {{ .Values.frontend.port | quote }}
+              protocol: TCP
+    - fromEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: {{ .Values.frontend.port | quote }}
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
